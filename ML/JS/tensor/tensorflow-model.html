@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="text" id="input_data" placeholder="온도를 입력하세요">
+    <button onclick="fn_predict()">예측</button>
+    <div id="output"></div>
+    <script>
+        //기온에 따른 판매량 예측
+        let 온도 = [20, 21, 22, 20, 23, 21];
+        let 판매량 = [40, 45, 48, 42, 50, 42];
+
+        let x = tf.tensor(온도);
+        let y = tf.tensor(판매량);
+        x.print()
+        //모델 생성
+        let input = tf.input({ shape: [1] });
+        //in
+        let hidden =tf.layers.dense({units: 10,activation:'relu'}).apply(input);
+        //hidden layer
+        let layer = tf.layers.dense({ units: 1 }).apply(hidden); 
+        //out
+        let model = tf.model({ inputs: input, outputs: layer });
+        let complieParam = { optimizer: tf.train.adam(), loss: tf.losses.meanSquaredError };
+         
+        model.compile(complieParam);
+        let fitParam = {
+            epochs: 1500, callbacks: {onEpochEnd: function (epoch, logs) {
+                    console.log('epoch', epoch, logs);
+                }
+            }
+        }
+        // model.fit(x,y,fitParam).then(function(){
+        //     let 예측 =model.predict(x);
+        //     예측.print()
+        // });
+        async function train_predict(){
+            await model.fit(x,y,fitParam);
+            console.log("finish");
+             //test
+            let 다음주온도 =[18,20,17,15];
+            let test_x =tf.tensor(다음주온도);
+            let 예측온도 =model.predict(test_x);
+            예측온도.print();
+        }
+        fn_predict();
+        function fn_predict(){
+            let data =document.getElementById("input_data").value;
+            let test_data =tf.tensor([data*1]);
+            let pred=model.predict(test_data);
+            document.getElementById("output").innerText=arr[0];
+        }
+       
+    </script>
+</body>
+
+</html>

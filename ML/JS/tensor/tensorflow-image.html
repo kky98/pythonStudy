@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+</head>
+
+<body>
+
+    <div>
+        <input type="file" onchange="previewFile()"></br>
+        <img src="" alt="image preview" id="my_image" height="200px">
+        <div id="image_show"></div>
+    </div>
+    <div id="webcam-container"></div>
+    <div id="label-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script type="text/javascript">
+
+        const URL = "./my_model/";
+
+        let model, webcam, labelContainer, maxPredictions;
+
+
+        async function init() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+            labelContainer = document.getElementById("label-container");
+            for(let i =0; i, i<maxPredictions; i++){
+                labelContainer.appendChild(document.createElement("div"));
+            }
+
+        }
+        async function predict() {
+            let image = document.getElementById("my_image");
+            let prediction = await model.predict(image);
+            for (let i = 0; i < maxPredictions; i++) {
+                let class_pred = prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+                labelContainer.childNodes[i].innerHTML = class_pred;
+            }
+            console.log(prediction[0].className);
+            console.log(prediction[0].probability);
+            console.log(prediction[0].probability.toFixrd(2));
+
+        }
+        function previewFile() {
+            let file = document.querySelector('input[type=file]').files[0];
+            let reader = new FileReader();
+            reader.onload = function () {
+                let img = document.querySelector("img");
+                img.src = reader.result;
+            }
+            reader.readAsDataURL(file); 
+        }
+        $(document).ready(function(){
+            init();
+            $('#my_image').on("load",function(){
+                predict();
+            })
+           
+        })
+
+
+       
+    </script>
+
+
+</body>
+
+</html>
